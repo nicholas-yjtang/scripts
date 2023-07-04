@@ -1,7 +1,2 @@
 #cloud-config
 hostname: ${hostname}
-users:
-  sudo: ['ALL=(ALL) NOPASSWD:ALL']
-
-runcmd:
-  - sudo hostnamectl set-hostname ${hostname}
