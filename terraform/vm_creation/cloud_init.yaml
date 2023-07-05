@@ -1,0 +1,13 @@
+#cloud-config
+hostname: ${hostname}
+users:
+  - name: ${admin}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${admin_key}
+  - name: ${username}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_key}
