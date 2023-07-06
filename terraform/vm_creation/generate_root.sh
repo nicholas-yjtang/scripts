@@ -1,6 +1,6 @@
 #!/bin/bash
 #generate a ssh key for root
-#usage: ./generate_root.sh <number of users> <output file>
+#usage: ./generate_root.sh <root_username> <output_folder>
 
 root_username=admin
 if [ $# -ge 1 ]; then
@@ -9,7 +9,7 @@ fi
 
 ssh_outputfolder=ssh_keys
 if [ $# -ge 2 ]; then
-    username_prefix=$2
+    ssh_outputfolder=$2
 fi
 
 key_file="$ssh_outputfolder/${root_username}_key"
