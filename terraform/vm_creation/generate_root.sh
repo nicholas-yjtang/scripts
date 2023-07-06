@@ -13,5 +13,5 @@ if [ $# -ge 2 ]; then
 fi
 
 key_file="$ssh_outputfolder/${root_username}_key"
-ssh-keygen -t rsa -b 4096 -C "$root_username" -f "$key_file" -N ""
+ssh-keygen -t rsa-sha2-512 -b 4096 -C "$root_username" -f "$key_file" -N ""
 echo "SSH key generated for $root_username. Public key: ${key_file}.pub"

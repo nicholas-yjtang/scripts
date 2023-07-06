@@ -54,7 +54,7 @@ for i in $(seq 1 $1); do
     echo "Generating SSH key for $username"
     # Generate the SSH key pair for the student
     key_file="$ssh_outputfolder/${username}_key"
-    ssh-keygen -t rsa -b 4096 -C "$username@$hostname" -f "$key_file" -N ""
+    ssh-keygen -t rsa-sha2-512 -b 4096 -C "$username@$hostname" -f "$key_file" -N ""
     echo "SSH key generated for $username. Public key: ${key_file}.pub"
     echo "$username,$hostname,$key_file.pub" >> $output_file
 

@@ -3,11 +3,18 @@ hostname: ${hostname}
 users:
   - name: ${admin}
     sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
     lock_passwd: true
     ssh_authorized_keys:
       - ${admin_key}
   - name: ${username}
     sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
     lock_passwd: true
     ssh_authorized_keys:
       - ${ssh_key}
+
+runcmd:
+  - sudo apt update && sudo apt install -y qemu-guest-agent
+  - sudo systemctl enable qemu-guest-agent
+  - sudo systemctl start qemu-guest-agent

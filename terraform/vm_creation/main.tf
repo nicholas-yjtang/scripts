@@ -23,14 +23,14 @@ variable "memoryMB" { default = 1024 * 4 }
 variable "cpu" { default = 2 }
 variable "disksizeMB" { default = 1024 * 1024 * 1024 * 25 }
 variable "networkname" { default = "vm_network" }
-variable "admin" { default = "admin" }
+variable "admin" { default = "administrator" } #admin user, caution: do not use admin as username
 variable "admin_ssh_key" { default = "ssh_keys/admin_key.pub" }
 
 resource "libvirt_volume" "ubuntu-qcow2" {
   for_each = { for inst in local.instances : inst.username => inst } #create a map with username as key
   name           = "ubuntu-${each.value.username}.qcow2"
   pool = "default"
-  source = "file:///iso/22.04-server-cloudimg-amd64.img" #local instance so it is faster to create
+  source = "file:///iso/ubuntu-22.04-server-cloudimg-amd64.img" #local instance so it is faster to create
   #source = "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
 
 }
@@ -73,7 +73,7 @@ resource "libvirt_domain" "domain" {
   memory     = var.memoryMB
   vcpu       = var.cpu
   qemu_agent = true
-  autostart  = true
+  autostart  = false
 
   cpu {
     mode = "host-model"
