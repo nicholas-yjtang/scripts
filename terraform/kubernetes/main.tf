@@ -28,7 +28,8 @@ variable "provider_address" { default="192.168.11.0/24"}
 variable "management_address" { default="10.0.5.0/24"}
 variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
-variable "crio-version" { default = "1.22" } #some versions don't have the key for apt, so change as accordingly
+variable "crio-version" { default = "1.27" } #some versions don't have the key for apt, so change as accordingly
+variable "kube-version" { default = "1.27.0-00" } 
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -111,6 +112,10 @@ data "template_file" "user_data" {
     ssh_key = file(var.ssh_key)
     username = var.username
     crio_version = var.crio-version
+    init_script = base64encode(file("${path.module}/scripts/init.sh"))
+    install_crio_script = base64encode(file("${path.module}/scripts/install_crio.sh"))
+    install_kube_script = base64encode(file("${path.module}/scripts/install_kube.sh"))
+    kube_version = var.kube-version 
   }
 }
 
