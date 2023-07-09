@@ -9,5 +9,15 @@ fi
 apt update && apt install -y kubelet=$VERSION kubeadm=$VERSION kubectl=$VERSION
 apt-mark hold kubelet kubeadm kubectl
 USERNAME=$2
-echo "source <(kubectl completion bash)" >> /home/$USERNAME/.bashrc # add autocomplete permanently to your bash shell.
-echo "alias k=kubectl" >> /home/$USERNAME/.bashrc # add alias
+if [ -z "$USERNAME" ]; then
+    echo "No username was sent to the script, attempting to find based on current directory"
+fi
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+USERNAME=$(echo $CURRENT_DIR | awk -F/ '{print $3}')
+if [ -z "$USERNAME" ]; then
+    echo "No username found"
+    exit 1
+fi
+kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
+mkdir -p /home/$USERNAME/.kube
+chown $USERNAME:$USERNAME /home/$USERNAME/.kube

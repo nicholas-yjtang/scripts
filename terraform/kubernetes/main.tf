@@ -17,14 +17,8 @@ variable "hostname" { default = "kubernetes" }
 variable "memoryMB" { default = 1024 * 12 }
 variable "cpu" { default = 4 }
 variable "disksizeMB" { default = 1024 * 1024 * 1024 * 100 }
-variable "providernetwork" { default = "kubernetes_provider" }
 variable "managementnetwork" { default = "kubernetes_management" }
-variable "bridge" { default = "br0" }
-variable "providerdns" { default="192.168.11.1"}
-variable "providergateway" {default="192.168.11.1"}
-variable "managementdns" { default="192.168.11.1"}
 variable "managementgateway" {default="10.0.5.1"}
-variable "provider_address" { default="192.168.11.0/24"}
 variable "management_address" { default="10.0.5.0/24"}
 variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
@@ -61,17 +55,6 @@ resource "libvirt_volume" "volume" {
   size =  var.disksizeMB
 }
 
-resource "libvirt_network" "providernetwork" {
-  name = var.providernetwork
-  mode      = "bridge"
-  autostart = true
-  dhcp {
-    enabled = true
-  }
-  addresses = [var.provider_address]
-  bridge    = var.bridge
-}
-
 resource "libvirt_network" "managementnetwork" {
   name = var.managementnetwork
   mode      = "nat"
@@ -90,21 +73,7 @@ resource "libvirt_cloudinit_disk" "commoninit" {
   name      = "${each.value.hostname}-commoninit.iso"
   pool = libvirt_pool.cluster.name
   user_data = data.template_file.user_data[each.value.hostname].rendered
-  #network_config = data.template_file.network_data[each.value.hostname].rendered
 
-}
-
-data "template_file" "network_data" {
-  for_each = { for inst in local.instances : inst.hostname => inst}
-  template = file("${path.module}/network_init.cfg")
-  vars = {
-    providerdns = var.providerdns
-    providergateway = var.providergateway
-    managementdns = var.managementdns
-    managementgateway = var.managementgateway
-    managementip = each.value.managementip
-    providerip = each.value.providerip
-  }
 }
 
 data "template_file" "user_data" {
@@ -125,6 +94,9 @@ data "template_file" "user_data" {
     cluster_endpoint_hostfile = base64encode(join("",[for inst in local.instances : "${inst.managementip} ${var.k8s_cluster_endpoint}" if length(regexall(".*control.*", inst.hostname)) > 0]))
     init_cluster_script = base64encode(file("${path.module}/scripts/init_cluster.sh"))
     concat_hostname_script = base64encode(file("${path.module}/scripts/concat_hostname.sh"))
+    join_cluster_script = base64encode(file("${path.module}/scripts/join_cluster.sh"))
+    install_cluster_networking_script = base64encode(file("${path.module}/scripts/install_cluster_networking.sh"))
+    install_containerd_script = base64encode(file("${path.module}/scripts/install_containerd.sh"))
   }
 }
 
@@ -151,13 +123,6 @@ resource "libvirt_domain" "domain" {
     network_name = var.managementnetwork
     hostname = each.value.hostname
     addresses = [each.value.managementip]
-  }
-
-  network_interface {
-    network_name = var.providernetwork
-    hostname = each.value.hostname
-    bridge = var.bridge
-    addresses = [each.value.providerip]
   }
 
   console {

@@ -1,5 +1,6 @@
 #!/bin/bash
-cluster_hostfile="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )/cluster_endpoint_hostfile"
+CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cluster_hostfile=$CURRENT_DIR/cluster_endpoint_hostfile
 hostfile=/etc/hosts
 cluster_endpoint_ip=$(cat $cluster_hostfile |awk '{print $1}')
 cluster_endpoint_hostname=$(cat $cluster_hostfile |awk '{print $2}')    
