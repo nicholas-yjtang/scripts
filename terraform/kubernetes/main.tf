@@ -30,6 +30,9 @@ variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
 variable "crio-version" { default = "1.27" } #some versions don't have the key for apt, so change as accordingly
 variable "kube-version" { default = "1.27.0-00" } 
+variable "k8s_admin_ssh_private_key" { default = "ssh_keys/k8s_admin_key" }
+variable "k8s_admin_ssh_public_key" { default = "ssh_keys/k8s_admin_key.pub" }
+variable "k8s_cluster_endpoint" { default = "k8s-cluster-endpoint" }
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -116,6 +119,12 @@ data "template_file" "user_data" {
     install_crio_script = base64encode(file("${path.module}/scripts/install_crio.sh"))
     install_kube_script = base64encode(file("${path.module}/scripts/install_kube.sh"))
     kube_version = var.kube-version 
+    k8s_admin_ssh_private_key = base64encode(file(var.k8s_admin_ssh_private_key))
+    k8s_admin_ssh_public_key = file(var.k8s_admin_ssh_public_key)
+    hosts = base64encode(join("\n", [for inst in local.instances : "${inst.managementip} ${inst.hostname}"]))
+    cluster_endpoint_hostfile = base64encode(join("",[for inst in local.instances : "${inst.managementip} ${var.k8s_cluster_endpoint}" if length(regexall(".*control.*", inst.hostname)) > 0]))
+    init_cluster_script = base64encode(file("${path.module}/scripts/init_cluster.sh"))
+    concat_hostname_script = base64encode(file("${path.module}/scripts/concat_hostname.sh"))
   }
 }
 

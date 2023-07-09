@@ -8,3 +8,6 @@ if [ -z "$VERSION" ]; then
 fi
 apt update && apt install -y kubelet=$VERSION kubeadm=$VERSION kubectl=$VERSION
 apt-mark hold kubelet kubeadm kubectl
+USERNAME=$2
+echo "source <(kubectl completion bash)" >> /home/$USERNAME/.bashrc # add autocomplete permanently to your bash shell.
+echo "alias k=kubectl" >> /home/$USERNAME/.bashrc # add alias

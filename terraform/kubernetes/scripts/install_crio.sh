@@ -14,3 +14,6 @@ mkdir -p /usr/share/keyrings
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/Release.key | gpg --dearmor -o /usr/share/keyrings/libcontainers-archive-keyring.gpg
 curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/$VERSION/$OS/Release.key | gpg --dearmor -o /usr/share/keyrings/libcontainers-crio-archive-keyring.gpg
 apt update && apt install -y cri-o cri-o-runc
+systemctl daemon-reload
+systemctl start crio
+systemctl enable crio
