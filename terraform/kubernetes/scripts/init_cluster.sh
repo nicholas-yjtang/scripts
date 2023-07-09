@@ -1,7 +1,7 @@
 #!/bin/bash
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cluster_hostfile=$CURRENT_DIR/cluster_endpoint_hostfile
-cluster_endpoint=$(cat $cluster_hostfile |awk '{print $1}')
+cluster_endpoint=$(cat $cluster_hostfile |awk '{print $2}')
 if [ -z "$cluster_endpoint" ]; then
     echo "No cluster endpoint found"
     exit 1
