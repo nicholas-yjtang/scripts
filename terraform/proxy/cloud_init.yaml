@@ -1,0 +1,26 @@
+#cloud-config
+hostname: ${hostname}
+users:
+  - name: ${admin}
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    passwd: ${admin_passwd}
+    lock_passwd: false
+    ssh_authorized_keys:
+      - ${admin_key}
+
+write_files:
+  - path: /opt/cache/install_apt_cacher_ng.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${install_apt_cacher_ng_script}
+  - path: /opt/cache/install_squid_deb_proxy.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${install_squid_deb_proxy_script}
+
+runcmd:
+  - echo ${address} ${hostname} >> /etc/hosts
+  - /opt/cache/install_squid_deb_proxy.sh
