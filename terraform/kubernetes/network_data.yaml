@@ -1,0 +1,17 @@
+version: 2
+ethernets:
+    ens3:
+        dhcp4: false
+        addresses:
+            - ${managementip}/24
+        gateway4: ${managementgateway}
+        nameservers:
+            addresses:
+            - ${managementdns}
+    ens4:
+        addresses:
+            - ${proxyip}/24
+        gateway4: ${proxygateway}
+        nameservers:
+            addresses:
+                - ${proxydns}
