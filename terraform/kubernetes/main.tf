@@ -19,6 +19,7 @@ variable "cpu" { default = 4 }
 variable "disksizeMB" { default = 1024 * 1024 * 1024 * 100 }
 variable "managementnetwork" { default = "kubernetes_management" }
 variable "managementgateway" {default="10.0.5.1"}
+variable "managememtdns" {default="10.0.5.1"}
 variable "management_address" { default="10.0.5.0/24"}
 variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
@@ -27,6 +28,10 @@ variable "kube-version" { default = "1.27.0-00" }
 variable "k8s_admin_ssh_private_key" { default = "ssh_keys/k8s_admin_key" }
 variable "k8s_admin_ssh_public_key" { default = "ssh_keys/k8s_admin_key.pub" }
 variable "k8s_cluster_endpoint" { default = "k8s-cluster-endpoint" }
+variable "proxynetwork" { default = "proxy_network" }
+variable "proxygateway" {default="10.0.6.1"}
+variable "proxydns" {default="10.0.6.1"}
+variable "proxyip" { default = "10.0.6.11" }
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -66,14 +71,27 @@ resource "libvirt_network" "managementnetwork" {
 
 }
 
-
 # Use CloudInit to add the instance
 resource "libvirt_cloudinit_disk" "commoninit" {
   for_each = { for inst in local.instances : inst.hostname => inst}
   name      = "${each.value.hostname}-commoninit.iso"
   pool = libvirt_pool.cluster.name
   user_data = data.template_file.user_data[each.value.hostname].rendered
+  network_config = data.template_file.network_data[each.value.hostname].rendered
+}
 
+data "template_file" "network_data" {
+  for_each = { for inst in local.instances : inst.hostname => inst}
+  template = file("${path.module}/network_data.yaml")
+  vars = {
+    hostname = each.value.hostname
+    managementip = each.value.managementip
+    managementgateway = var.managementgateway
+    managementdns = var.managememtdns
+    proxyip = each.value.proxyip
+    proxygateway = var.proxygateway
+    proxydns = var.proxydns
+  }
 }
 
 data "template_file" "user_data" {
@@ -95,8 +113,14 @@ data "template_file" "user_data" {
     init_cluster_script = base64encode(file("${path.module}/scripts/init_cluster.sh"))
     concat_hostname_script = base64encode(file("${path.module}/scripts/concat_hostname.sh"))
     join_cluster_script = base64encode(file("${path.module}/scripts/join_cluster.sh"))
-    install_cluster_networking_script = base64encode(file("${path.module}/scripts/install_cluster_networking.sh"))
+    install_cni_calico_script = base64encode(file("${path.module}/scripts/install_cni_calico.sh"))
+    install_cni_cilium_script = base64encode(file("${path.module}/scripts/install_cni_cilium.sh"))
     install_containerd_script = base64encode(file("${path.module}/scripts/install_containerd.sh"))
+    install_containerd_cni_script = base64encode(file("${path.module}/scripts/install_containerd_cni.sh"))
+    install_loadbalancer_mlb_script = base64encode(file("${path.module}/scripts/install_loadbalancer_mlb.sh"))
+    proxyip = var.proxyip
+    password = file("${path.module}/password.txt")
+    configure_proxy_script = base64encode(file("${path.module}/scripts/configure_proxy.sh"))
   }
 }
 
@@ -123,6 +147,12 @@ resource "libvirt_domain" "domain" {
     network_name = var.managementnetwork
     hostname = each.value.hostname
     addresses = [each.value.managementip]
+  }
+
+  network_interface {
+    network_name = var.proxynetwork
+    hostname = each.value.hostname
+    addresses = [each.value.proxyip]
   }
 
   console {

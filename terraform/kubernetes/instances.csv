@@ -1,5 +1,5 @@
-hostname,cloudinit,managementip,providerip
-k8control,cloud_init_controlplane.cfg,10.0.5.11,192.168.11.71
-k8node1,cloud_init_node.cfg,10.0.5.31,192.168.11.72
-k8node2,cloud_init_node.cfg,10.0.5.32,192.168.11.73
-k8node3,cloud_init_node.cfg,10.0.5.33,192.168.11.74
+hostname,cloudinit,managementip,proxyip
+k8control,cloud_init_controlplane.cfg,10.0.5.11,10.0.6.31
+k8node1,cloud_init_node.cfg,10.0.5.31,10.0.6.32
+k8node2,cloud_init_node.cfg,10.0.5.32,10.0.6.33
+k8node3,cloud_init_node.cfg,10.0.5.33,10.0.6.34

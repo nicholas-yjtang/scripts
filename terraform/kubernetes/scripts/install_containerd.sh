@@ -1,16 +1,17 @@
 #!/bin/bash
-apt update && apt install -y ca-certificates curl gnupg
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-chmod a+r /etc/apt/keyrings/docker.gpg
-echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-apt update && apt install -y containerd.io
-#install cni
+#install containerd
+wget -O containerd-1.7.2-linux-amd64.tar.gz https://github.com/containerd/containerd/releases/download/v1.7.2/containerd-1.7.2-linux-amd64.tar.gz
+tar -xvf containerd-1.7.2-linux-amd64.tar.gz -C /usr/local
+wget -O containerd.service https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+mv containerd.service /etc/systemd/system/containerd.service
+systemctl daemon-reload
+systemctl enable --now container
+#install runc
+wget -O runc.amd64 https://github.com/opencontainers/runc/releases/download/v1.1.7/runc.amd64
+install -m 755 runc.amd64 /usr/local/sbin/runc
+mkdir -p /etc/containerd/
+systemctl restart containerd
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd $CURRENT_DIR
-wget -O cni-plugins-linux-amd64-v1.3.0.tgz https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
-mkdir -p /opt/cni/bin
-tar -xvf cni-plugins-linux-amd64-v1.3.0.tgz -C /opt/cni/bin
-sed -i "s/cri//g" /etc/containerd/config.toml
-systemctl restart containerd
+./install_containerd_cni.sh
+popd

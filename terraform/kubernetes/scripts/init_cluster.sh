@@ -7,13 +7,19 @@ if [ -z "$cluster_endpoint" ]; then
     exit 1
 fi
 kubeadm init --control-plane-endpoint $cluster_endpoint --pod-network-cidr=192.168.0.0/16
-pushd $CURRENT_DIR
 if [ ! -f /etc/kubernetes/admin.conf ]; then
     echo "No admin.conf found"
     exit 1
 fi
-mkdir -p .kube
-cp /etc/kubernetes/admin.conf .kube/config
-USERNAME=$(echo $CURRENT_DIR | awk -F/ '{print $3}')
-chown $USERNAME:$USERNAME .kube/config
-popd
+USERNAME=$1
+echo "USERNAME=$USERNAME"
+if [ -z "$USERNAME" ]; then
+    echo "No username was sent to the script, exiting"
+    exit 1
+fi
+mkdir -p /home/$USERNAME/.kube
+cp /etc/kubernetes/admin.conf /home/$USERNAME/.kube/config
+chown -R $USERNAME:$USERNAME /home/$USERNAME/.kube
+# Create the .kube for the root user too for convenience during the installation process
+mkdir -p /root/.kube
+cp /etc/kubernetes/admin.conf /root/.kube/config
