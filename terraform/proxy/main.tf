@@ -67,6 +67,8 @@ data "template_file" "user_data" {
     install_apt_cacher_ng_script = base64encode(file("${path.module}/scripts/install_apt_cacher_ng.sh"))
     install_squid_deb_proxy_script = base64encode(file("${path.module}/scripts/install_squid_deb_proxy.sh"))
     admin_passwd = file ("${path.module}/root_password.txt")
+    install_ssl_squid_proxy_script = base64encode(file("${path.module}/scripts/install_ssl_squid_proxy.sh"))
+    squid_conf = base64encode(file("${path.module}/config/squid.conf"))
   }  
 }
 
