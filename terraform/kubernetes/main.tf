@@ -31,7 +31,7 @@ variable "k8s_cluster_endpoint" { default = "k8s-cluster-endpoint" }
 variable "proxynetwork" { default = "proxy_network" }
 variable "proxygateway" {default="10.0.6.1"}
 variable "proxydns" {default="10.0.6.1"}
-variable "proxyip" { default = "10.0.6.11" }
+variable "proxy_server" { default = "10.0.6.11:8000" }
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -118,9 +118,10 @@ data "template_file" "user_data" {
     install_containerd_script = base64encode(file("${path.module}/scripts/install_containerd.sh"))
     install_containerd_cni_script = base64encode(file("${path.module}/scripts/install_containerd_cni.sh"))
     install_loadbalancer_mlb_script = base64encode(file("${path.module}/scripts/install_loadbalancer_mlb.sh"))
-    proxyip = var.proxyip
+    proxy_server = var.proxy_server
     password = file("${path.module}/password.txt")
     configure_proxy_script = base64encode(file("${path.module}/scripts/configure_proxy.sh"))
+    metallb_addresspool_config = base64encode(file("${path.module}/config/metallb-addresspool.yaml"))
   }
 }
 

@@ -1,10 +1,10 @@
 #!/bin/bash
-proxyip=$1
-if [ -z "$proxyip" ]
+proxy_server=$1
+if [ -z "$proxy_server" ]
 then
-      echo "No proxy IP supplied"
+      echo "No proxy server supplied"
       exit 1
 fi
-echo 'Acquire::http::Proxy "http://'$proxyip':8000";' >> /etc/apt/apt.conf.d/proxy.conf
+echo 'Acquire::http::Proxy "http://'$proxy_server'";' >> /etc/apt/apt.conf.d/proxy.conf
 echo 'Acquire::https::Verify-Peer "false";' >> /etc/apt/apt.conf.d/proxy.conf
 echo 'Acquire::https::Verify-Host "false";' >> /etc/apt/apt.conf.d/proxy.conf

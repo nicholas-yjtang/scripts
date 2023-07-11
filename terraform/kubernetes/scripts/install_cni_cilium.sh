@@ -8,7 +8,14 @@ curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/d
 sha256sum --check cilium-linux-${CLI_ARCH}.tar.gz.sha256sum
 sudo tar xzvfC cilium-linux-${CLI_ARCH}.tar.gz /usr/local/bin
 rm cilium-linux-${CLI_ARCH}.tar.gz{,.sha256sum}
+USERNAME=$1
+if [ -z "$USERNAME" ]; then
+    echo "No username was sent to the script, exiting"
+    exit 1
+fi
+pushd /home/$USERNAME
 cilium install
 cilium status --wait
 #cilium connectivity test
+popd
 popd

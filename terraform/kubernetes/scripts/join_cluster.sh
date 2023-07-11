@@ -18,9 +18,6 @@ if [ ! -f /etc/kubernetes/admin.conf ]; then
 else
     scp -i .ssh/id_rsa -B /etc/kubernetes/admin.conf $admin@$node:/home/$admin/.kube/config
 fi
-pushd /home/$admin
-kubectl taint nodes $node node-role.kubernetes.io/master:NoSchedule-
-popd
 done
 cat hosts | grep "control" | awk '{print $2}' | while read node;
 do
