@@ -6,7 +6,7 @@ if [ ! -f squid-6.1.tar.gz ]; then
 fi
 tar -xvf squid-6.1.tar.gz
 pushd squid-6.1
-./configure --prefix=/opt/squid --enable-ssl-crtd --with-openssl
+./configure --prefix=/opt/squid --enable-ssl-crtd --with-openssl -with-default-user=proxy --with-large-files
 if [ $? -ne 0 ]; then
     echo "Failed to configure"
     exit 1
