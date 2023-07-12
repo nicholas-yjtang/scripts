@@ -1,7 +1,7 @@
 #!/bin/bash
 apt update && apt install -y squid-openssl
 pushd /etc/squid/
-openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=SG/ST=SG/L=Singapore/O=IT/CN=proxy-server" -keyout bump.key  -out bump.crt
+openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -subj "/C=SG/ST=SG/L=Singapore/O=IT/CN=proxy-server" -keyout bump.key  -out bump.crt
 openssl x509 -in bump.crt -outform DER -out bump.der
 openssl dhparam -outform PEM -out /etc/squid/bump_dhparam.pem 2048
 chown proxy:proxy /etc/squid/bump*
