@@ -8,6 +8,7 @@ if [ -z "$VERSION" ]; then
 fi
 apt update && apt install -y kubelet=$VERSION kubeadm=$VERSION kubectl=$VERSION
 apt-mark hold kubelet kubeadm kubectl
+apt update && apt install jq
 USERNAME=$2
 if [ -z "$USERNAME" ]; then
     echo "No username was sent to the script, exiting"

@@ -2,11 +2,16 @@
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cluster_hostfile=$CURRENT_DIR/cluster_endpoint_hostfile
 cluster_endpoint=$(cat $cluster_hostfile |awk '{print $2}')
+pod_cidr=$2
+if [ -z "$pod_cidr" ]; then
+    echo "No pod_cidr was sent to the script, using default 192.168.0.0/16"
+    pod_cidr=192.168.0.0/16
+fi
 if [ -z "$cluster_endpoint" ]; then
     echo "No cluster endpoint found"
     exit 1
 fi
-kubeadm init --control-plane-endpoint $cluster_endpoint --pod-network-cidr=192.168.0.0/16
+kubeadm init --control-plane-endpoint $cluster_endpoint --pod-network-cidr=$pod_cidr
 if [ ! -f /etc/kubernetes/admin.conf ]; then
     echo "No admin.conf found"
     exit 1

@@ -12,7 +12,7 @@ if [ -z "$admin" ]; then
 fi
 cat hosts | grep "node" | awk '{print $2}' | while read node;
 do
-ssh -n -o StrictHostKeyChecking=no -i .ssh/id_rsa $admin@$node "sudo $join_command"
+ssh -n -o StrictHostKeyChecking=no -i .ssh/id_rsa $admin@$node "/opt/k8setup/wait.sh; sudo $join_command"
 if [ ! -f /etc/kubernetes/admin.conf ]; then
     echo "No admin.conf found"
 else

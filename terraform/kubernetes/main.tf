@@ -17,9 +17,9 @@ variable "hostname" { default = "kubernetes" }
 variable "memoryMB" { default = 1024 * 12 }
 variable "cpu" { default = 4 }
 variable "disksizeMB" { default = 1024 * 1024 * 1024 * 100 }
-variable "managementnetwork" { default = "kubernetes_management" }
-variable "managementgateway" {default="10.0.5.1"}
-variable "managememtdns" {default="10.0.5.1"}
+variable "management_network" { default = "kubernetes_management" }
+variable "management_gateway" {default="10.0.5.1"}
+variable "managememt_dns" {default="10.0.5.1"}
 variable "management_address" { default="10.0.5.0/24"}
 variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
@@ -28,10 +28,13 @@ variable "kube-version" { default = "1.27.0-00" }
 variable "k8s_admin_ssh_private_key" { default = "ssh_keys/k8s_admin_key" }
 variable "k8s_admin_ssh_public_key" { default = "ssh_keys/k8s_admin_key.pub" }
 variable "k8s_cluster_endpoint" { default = "k8s-cluster-endpoint" }
-variable "proxynetwork" { default = "proxy_network" }
-variable "proxygateway" {default="10.0.6.1"}
-variable "proxydns" {default="10.0.6.1"}
-variable "proxy_server" { default = "10.0.6.11:8000" }
+variable "provider_network" { default = "provider_network" }
+variable "provider_gateway" {default="10.0.6.1"}
+variable "provider_dns" {default="10.0.6.1"}
+variable "provider_address" { default="10.0.6.0/24"}
+variable "proxy_server" { default = "10.0.5.1:8000" }
+variable "pod_cidr" { default = "192.168.0.0/16" }
+variable "cilium_version" { default = "1.13.4" }
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -60,14 +63,25 @@ resource "libvirt_volume" "volume" {
   size =  var.disksizeMB
 }
 
-resource "libvirt_network" "managementnetwork" {
-  name = var.managementnetwork
+resource "libvirt_network" "management_network" {
+  name = var.management_network
   mode      = "nat"
   autostart = true
   dhcp {
     enabled = true
   }  
   addresses = [var.management_address]
+
+}
+
+resource "libvirt_network" "provider_network" {
+  name = var.provider_network
+  mode      = "nat"
+  autostart = true
+  dhcp {
+    enabled = true
+  }  
+  addresses = [var.provider_address]
 
 }
 
@@ -85,12 +99,12 @@ data "template_file" "network_data" {
   template = file("${path.module}/network_data.yaml")
   vars = {
     hostname = each.value.hostname
-    managementip = each.value.managementip
-    managementgateway = var.managementgateway
-    managementdns = var.managememtdns
-    proxyip = each.value.proxyip
-    proxygateway = var.proxygateway
-    proxydns = var.proxydns
+    management_ip = each.value.management_ip
+    management_gateway = var.management_gateway
+    management_dns = var.managememt_dns
+    provider_ip = each.value.provider_ip
+    provider_gateway = var.provider_gateway
+    provider_dns = var.provider_dns
   }
 }
 
@@ -108,8 +122,8 @@ data "template_file" "user_data" {
     kube_version = var.kube-version 
     k8s_admin_ssh_private_key = base64encode(file(var.k8s_admin_ssh_private_key))
     k8s_admin_ssh_public_key = file(var.k8s_admin_ssh_public_key)
-    hosts = base64encode(join("\n", [for inst in local.instances : "${inst.managementip} ${inst.hostname}"]))
-    cluster_endpoint_hostfile = base64encode(join("",[for inst in local.instances : "${inst.managementip} ${var.k8s_cluster_endpoint}" if length(regexall(".*control.*", inst.hostname)) > 0]))
+    hosts = base64encode(join("\n", [for inst in local.instances : "${inst.management_ip} ${inst.hostname}"]))
+    cluster_endpoint_hostfile = base64encode(join("",[for inst in local.instances : "${inst.management_ip} ${var.k8s_cluster_endpoint}" if length(regexall(".*control.*", inst.hostname)) > 0]))
     init_cluster_script = base64encode(file("${path.module}/scripts/init_cluster.sh"))
     concat_hostname_script = base64encode(file("${path.module}/scripts/concat_hostname.sh"))
     join_cluster_script = base64encode(file("${path.module}/scripts/join_cluster.sh"))
@@ -122,6 +136,11 @@ data "template_file" "user_data" {
     password = file("${path.module}/password.txt")
     configure_proxy_script = base64encode(file("${path.module}/scripts/configure_proxy.sh"))
     metallb_addresspool_config = base64encode(file("${path.module}/config/metallb-addresspool.yaml"))
+    wait_script = base64encode(file("${path.module}/scripts/wait.sh"))
+    install_helm_script = base64encode(file("${path.module}/scripts/install_helm.sh"))
+    cilium_version = var.cilium_version
+    pod_cidr = var.pod_cidr
+    custom_apt_conf = base64encode(file("${path.module}/config/custom-apt.conf"))
   }
 }
 
@@ -145,15 +164,15 @@ resource "libvirt_domain" "domain" {
   cloudinit = libvirt_cloudinit_disk.commoninit[each.value.hostname].id
 
   network_interface {
-    network_name = var.managementnetwork
+    network_name = var.management_network
     hostname = each.value.hostname
-    addresses = [each.value.managementip]
+    addresses = [each.value.management_ip]
   }
 
   network_interface {
-    network_name = var.proxynetwork
+    network_name = var.provider_network
     hostname = each.value.hostname
-    addresses = [each.value.proxyip]
+    addresses = [each.value.provider_ip]
   }
 
   console {
@@ -169,7 +188,7 @@ resource "libvirt_domain" "domain" {
   }
 
   depends_on = [
-    libvirt_network.managementnetwork
+    libvirt_network.management_network
   ]
 
 
