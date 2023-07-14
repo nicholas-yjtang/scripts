@@ -69,9 +69,15 @@ write_files:
     encoding: b64
     content: |
       ${custom_apt_conf}
+  - path: /opt/k8setup/install_nfs_server.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${install_nfs_server_script}      
 
 runcmd:
   - echo "\n" | cat /opt/k8setup/hosts - >> /etc/hosts
+  - echo "\n${nfs_server_ip} ${nfs_server_hostname}" >> /etc/hosts
   - /opt/k8setup/configure_proxy.sh ${proxy_server}
   - apt update && apt install -y qemu-guest-agent
   - systemctl start qemu-guest-agent

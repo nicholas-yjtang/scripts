@@ -8,7 +8,7 @@ if [ -z "$VERSION" ]; then
 fi
 apt update && apt install -y kubelet=$VERSION kubeadm=$VERSION kubectl=$VERSION
 apt-mark hold kubelet kubeadm kubectl
-apt update && apt install jq
+apt update && apt install -y jq
 USERNAME=$2
 if [ -z "$USERNAME" ]; then
     echo "No username was sent to the script, exiting"
@@ -18,3 +18,10 @@ kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
 mkdir -p /home/$USERNAME/.kube
 mkdir -p /root/.kube
 chown $USERNAME:$USERNAME /home/$USERNAME/.kube
+if [ -f /home/$USERNAME/.bashrc ]; then
+    if grep --quiet "source <(kubectl completion bash)" /home/$USERNAME/.bashrc; then
+        echo "Kubectl completion already in .bashrc"
+    else
+        echo "source <(kubectl completion bash)" >> /home/$USERNAME/.bashrc
+    fi
+fi

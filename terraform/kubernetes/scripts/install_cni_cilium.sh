@@ -32,5 +32,12 @@ helm install cilium cilium/cilium --version $CILIUM_VERSION \
     --namespace kube-system \
     --set ipam.operator.clusterPoolIPv4PodCIDR=$POD_CIDR
 cilium status --wait
+if [ -f .bashrc ]; then
+    if grep --quiet "source <(cilium completion bash)" .bashrc; then
+        echo "Cilium completion already in .bashrc"
+    else
+        echo "source <(cilium completion bash)" >> .bashrc
+    fi
+fi
 #cilium connectivity test
 popd

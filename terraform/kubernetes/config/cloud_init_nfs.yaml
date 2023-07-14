@@ -1,0 +1,47 @@
+#cloud-config
+hostname: ${hostname}
+users:
+  - name: ${username} 
+    ssh_authorized_keys:
+      - ${ssh_key}
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    lock_passwd: true
+
+growpart:
+  mode: auto
+  devices: ['/']
+      
+write_files:
+  - path: /opt/k8setup/hosts
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${hosts}
+  - path: /opt/k8setup/cluster_endpoint_hostfile
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${cluster_endpoint_hostfile}     
+  - path: /opt/k8setup/concat_hostname.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${concat_hostname_script}
+  - path: /opt/k8setup/install_nfs_server.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${install_nfs_server_script}      
+
+runcmd:
+  - echo "\n" | cat /opt/k8setup/hosts - >> /etc/hosts
+  - echo "\n${nfs_server_ip} ${nfs_server_hostname}" >> /etc/hosts
+  - /opt/k8setup/configure_proxy.sh ${proxy_server}
+  - apt update && apt install -y qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - systemctl enable qemu-guest-agent
+  - chown -R ${username}:${username} /home/${username}
+  - /opt/k8setup/concat_hostname.sh
+  - /opt/k8setup/install_nfs_server.sh ${nfs_server_path}
+  - touch /opt/k8setup/done.txt
