@@ -10,4 +10,5 @@ RUN chown -R proxy:proxy /opt/squid
 WORKDIR /opt/squid
 USER proxy
 COPY scripts/run.sh ./run.sh
+EXPOSE 3128/tcp
 CMD ./run.sh
