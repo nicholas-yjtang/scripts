@@ -23,4 +23,10 @@ if grep --quiet "source <(helm completion bash)" .bashrc; then
 else
     echo "source <(helm completion bash)" >> .bashrc
 fi
+
+if [ ! -d .config ]; then
+    echo "No .config directory found"
+    exit 1
+fi
+sudo chown -R $USERNAME:$USERNAME .config
 popd

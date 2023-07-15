@@ -40,3 +40,9 @@ else
 fi
 exportfs -a
 systemctl restart nfs-kernel-server
+
+# Install NFS client on all nodes
+cat hosts | grep "control" | awk '{print $2}' | while read node;
+do
+    ssh -o StrictHostKeyChecking=no $node "/opt/k8setup/configure_nfs_nodes.sh $NFS_SERVER_HOSTNAME"
+done

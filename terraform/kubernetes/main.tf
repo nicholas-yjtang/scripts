@@ -167,6 +167,7 @@ data "template_file" "user_data" {
     nfs_server_path = var.nfs_server_path
     nfs_server_hostname = var.nfs_server_hostname
     nfs_server_ip = var.nfs_server_ip
+    configure_nfs_nodes_script = base64encode(file("${path.module}/scripts/configure_nfs_nodes.sh"))
   }
 }
 

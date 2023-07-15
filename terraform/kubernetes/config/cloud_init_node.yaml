@@ -74,6 +74,11 @@ write_files:
     encoding: b64
     content: |
       ${install_nfs_server_script}      
+  - path: /opt/k8setup/configure_nfs_nodes.sh
+    permissions: '0755'
+    encoding: b64
+    content: |
+      ${configure_nfs_nodes_script}
 
 runcmd:
   - echo "\n" | cat /opt/k8setup/hosts - >> /etc/hosts
@@ -87,4 +92,5 @@ runcmd:
   - /opt/k8setup/init.sh
   - /opt/k8setup/install_crio.sh
   - /opt/k8setup/install_kube.sh ${kube_version} ${username}
+  - /opt/k8setup/configure_nfs_nodes.sh
   - touch /opt/k8setup/done.txt
