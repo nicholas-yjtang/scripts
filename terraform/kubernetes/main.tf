@@ -19,7 +19,7 @@ variable "cpu" { default = 4 }
 variable "disksizeMB" { default = 1024 * 1024 * 1024 * 50 }
 variable "management_network" { default = "kubernetes_management" }
 variable "management_gateway" {default="10.0.5.1"}
-variable "managememt_dns" {default="10.0.5.1"}
+variable "management_dns" {default="10.0.5.1"}
 variable "management_address" { default="10.0.5.0/24"}
 variable "ssh_key" { default = "ssh_keys/administrator_key.pub" }
 variable "username" { default = "administrator" }
@@ -29,10 +29,10 @@ variable "k8s_admin_ssh_private_key" { default = "ssh_keys/k8s_admin_key" }
 variable "k8s_admin_ssh_public_key" { default = "ssh_keys/k8s_admin_key.pub" }
 variable "k8s_cluster_endpoint" { default = "k8s-cluster-endpoint" }
 variable "provider_network" { default = "provider_network" }
-variable "provider_gateway" {default="10.0.6.1"}
-variable "provider_dns" {default="10.0.6.1"}
-variable "provider_address" { default="10.0.6.0/24"}
-variable "proxy_server" { default = "10.0.5.1:8000" }
+variable "provider_gateway" {default="10.1.0.1"}
+variable "provider_dns" {default="10.1.0.1"}
+variable "provider_address" { default="10.1.0.0/16"}
+variable "proxy_server" { default = "10.1.0.1:3128" }
 variable "pod_cidr" { default = "192.168.0.0/16" }
 variable "cilium_version" { default = "1.13.4" }
 #nfs server related terraform
@@ -43,7 +43,8 @@ variable "nfs_disksizeMB" { default = 1024 * 1024 * 1024 * 40 }
 variable "nfs_data_disksizeMB" { default = 1024 * 1024 * 1024 * 100 }
 variable "nfs_cpu" { default = 2 }
 variable "nfs_memoryMB" { default = 1024 * 8 }
-
+#loadbalancer pool
+variable "loadbalancer_pool" { default = "10.1.1.1-10.1.255.254" }
 
 resource "libvirt_pool" "cluster" {
   name = "cluster"
@@ -100,7 +101,7 @@ resource "libvirt_network" "provider_network" {
   mode      = "nat"
   autostart = true
   dhcp {
-    enabled = true
+    enabled = false
   }  
   addresses = [var.provider_address]
 
@@ -122,10 +123,12 @@ data "template_file" "network_data" {
     hostname = each.value.hostname
     management_ip = each.value.management_ip
     management_gateway = var.management_gateway
-    management_dns = var.managememt_dns
+    management_dns = var.management_dns
+    management_prefix = split("/",var.management_address)[1]
     provider_ip = each.value.provider_ip
     provider_gateway = var.provider_gateway
     provider_dns = var.provider_dns
+    provider_prefix = split("/",var.provider_address)[1]
   }
 }
 
@@ -168,6 +171,7 @@ data "template_file" "user_data" {
     nfs_server_hostname = var.nfs_server_hostname
     nfs_server_ip = var.nfs_server_ip
     configure_nfs_nodes_script = base64encode(file("${path.module}/scripts/configure_nfs_nodes.sh"))
+    loadbalancer_pool = var.loadbalancer_pool
   }
 }
 
@@ -235,7 +239,8 @@ data "template_file" "nfs_network_data" {
     hostname = var.nfs_server_hostname
     management_ip = var.nfs_server_ip
     management_gateway = var.management_gateway
-    management_dns = var.managememt_dns    
+    management_dns = var.management_dns
+    management_prefix = split("/", var.management_address)[1]
   }
 }
 

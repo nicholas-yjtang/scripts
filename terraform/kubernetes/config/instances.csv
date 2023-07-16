@@ -1,5 +1,5 @@
 hostname,cloudinit,management_ip,provider_ip
-k8control,cloud_init_controlplane.yaml,10.0.5.11,10.0.6.31
-k8node1,cloud_init_node.yaml,10.0.5.31,10.0.6.32
-k8node2,cloud_init_node.yaml,10.0.5.32,10.0.6.33
-k8node3,cloud_init_node.yaml,10.0.5.33,10.0.6.34
+k8control,cloud_init_controlplane.yaml,10.0.5.11,10.1.0.2
+k8node1,cloud_init_node.yaml,10.0.5.31,10.1.0.3
+k8node2,cloud_init_node.yaml,10.0.5.32,10.1.0.4
+k8node3,cloud_init_node.yaml,10.0.5.33,10.1.0.5

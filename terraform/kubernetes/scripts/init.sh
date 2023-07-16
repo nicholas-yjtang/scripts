@@ -16,3 +16,9 @@ sysctl --system
 lsmod | grep br_netfilter
 lsmod | grep overlay
 sysctl net.bridge.bridge-nf-call-iptables net.bridge.bridge-nf-call-ip6tables net.ipv4.ip_forward
+
+#for cilium, disable the management of foreign routes
+sed -E -i "s/#ManageForeignRoutes=(.*)/ManageForeignRoutes=no/g" /etc/systemd/networkd.conf
+sed -E -i "s/#ManageForeignRoutingPolicyRules=(.*)/ManageForeignRoutingPolicyRules=no/g" /etc/systemd/networkd.conf
+systemctl daemon-reload
+systemctl restart systemd-networkd

@@ -30,5 +30,10 @@ do
         exit 1
     fi
 done
-kubectl apply -f $CURRENT_DIR/metallb-addresspool.yaml
+export loadbalancer_pool=$2
+if [ -z "$loadbalancer_pool" ]; then
+    echo "No loadbalancer_pool was sent to the script, exiting"
+    exit 1
+fi
+envsubst < $CURRENT_DIR/metallb-addresspool.yaml | kubectl apply -f -
 popd

@@ -3,14 +3,15 @@ ethernets:
     ens3:
         dhcp4: false
         addresses:
-            - ${management_ip}/24
+            - ${management_ip}/${management_prefix}
         gateway4: ${management_gateway}
         nameservers:
             addresses:
             - ${management_dns}
     ens4:
+        dhcp4: false
         addresses:
-            - ${provider_ip}/24
+            - ${provider_ip}/${provider_prefix}
         gateway4: ${provider_gateway}
         nameservers:
             addresses:

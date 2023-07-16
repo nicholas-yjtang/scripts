@@ -15,7 +15,8 @@ do
 if [ ! -f /etc/kubernetes/admin.conf ]; then
     echo "No admin.conf found"
 else
-    scp -i .ssh/id_rsa -B /etc/kubernetes/admin.conf $admin@$node:/home/$admin/.kube/config
+    echo "Copying admin.conf to $node"
+    scp -o StrictHostKeyChecking=no -i /home/$admin/.ssh/id_rsa /etc/kubernetes/admin.conf $admin@$node:/home/$admin/.kube/config
 fi
 ssh -n -o StrictHostKeyChecking=no -i .ssh/id_rsa $admin@$node "/opt/k8setup/wait.sh; sudo $join_command;"
 done
