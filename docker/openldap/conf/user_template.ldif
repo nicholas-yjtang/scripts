@@ -1,0 +1,6 @@
+dn: $UID_DN
+objectclass: top
+objectclass: person
+cn: $UID
+sn: $UID
+userPassword: $PASSWORD_HASH
