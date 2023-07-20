@@ -5,3 +5,5 @@ RUN mkdir -p /opt/openldap
 WORKDIR /opt/openldap
 COPY scripts scripts
 RUN scripts/build.sh
+EXPOSE 389 636
+CMD scripts/run.sh
