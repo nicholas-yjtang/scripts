@@ -1,5 +1,5 @@
-dn: dc=example,dc=local
+dn: $BASE_DN
 objectclass: dcObject
 objectclass: organization
-o: Example Company
-dc: example
+o: $ORGANIZATION
+dc: $ORGANIZATION

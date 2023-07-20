@@ -13,9 +13,19 @@ if [ -z $LDAP_ADMIN ]; then
     echo "LDAP_ADMIN is not set, setting default of admin"
     LDAP_ADMIN=admin
 fi
+
+if [ -z $DOMAIN ]; then
+    echo "DOMAIN is not set, deriving from hostname"
+    DOMAIN=$(echo $HOSTNAME | cut -d. -f2-)
+    if [ -z $DOMAIN ]; then
+        echo "DOMAIN is not set, setting default of example.local"
+        DOMAIN=example.local
+    fi
+fi
+
 if [ -z $BASE_DN ]; then
-    echo "BASE_DN is not set, setting default of dc=example,dc=local"
-    BASE_DN=dc=example,dc=local
+    echo "BASE_DN is not set, setting from DOMAIN"
+    BASE_DN=$(echo $DOMAIN | sed -E 's/^([a-zA-Z0-9]+\.?)+/dc=&/g' | sed -E 's/\./,dc=/g')
 fi
 
 cp $OPENLDAP_ETC_DIR/slapd.ldif.default $OPENLDAP_ETC_DIR/slapd.ldif

@@ -3,12 +3,16 @@ version: "3"
 services:
   openldap:
     image: openldap
+    hostname: ${hostname}
     ports:
       - "389:389"
       - "636:636"
+    extra_hosts:
+      - ${hostname}:127.0.0.1
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./data:/opt/openldap/data
-      - ./certs:/opt/openldap/certs
+      args:
+        - HOSTNAME=${hostname}
+      extra_hosts:
+        - ${hostname}:127.0.0.1
