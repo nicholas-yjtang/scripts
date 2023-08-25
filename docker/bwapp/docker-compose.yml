@@ -1,0 +1,9 @@
+version: "3.0"
+services:
+  bwapp:
+    image: nicholasyjtang/bwapp:2.2
+    ports:
+      - "9780:80"
+    build:
+      context: .
+      dockerfile: Dockerfile
